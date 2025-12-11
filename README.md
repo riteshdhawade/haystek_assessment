@@ -1,160 +1,101 @@
-"Student Exam Score Prediction — Haystek Assessment"
+**Student Exam Score Prediction**
 
-This project is an end-to-end Machine Learning pipeline designed to predict Math exam scores using student demographic, socioeconomic, and academic features.
-It demonstrates a complete workflow: EDA → Preprocessing → Modeling → Hyperparameter Tuning → Deployment (Pickle Model).
+**Haystek Technologies – Machine Learning Assessment**
 
-This assignment is submitted as part of the Haystek Technologies Round-2 Machine Learning Assessment.
+**Project Overview**
 
+This project implements an end-to-end machine learning pipeline to predict student MathScore based on demographic, socioeconomic, and academic features. The workflow includes exploratory data analysis, data preprocessing, model development, model evaluation, hyperparameter tuning, and deployment through a serialized model file.
 
+The objective is to build an accurate and reproducible prediction system that can generalize to new student profiles.
 
+**Dataset Information**
 
-* Objective :
-Build a complete ML solution that predicts MathScore for a student based on historical data and multiple influencing factors.
+Two datasets were provided with identical row counts but different feature sets.
 
+1. Original dataset
 
-
-
-* Dataset Description
-Two datasets were provided:
-
-* Original_data_with_more_rows.csv
-30,641 rows
-8 columns
+Contains eight columns
 No missing values
-Suitable for quick data understanding
+Used for initial inspection
 
-* Expanded_data_with_more_features.csv
-30,641 rows
-14 columns
+2. Expanded dataset
+
+Contains fourteen columns
+Includes several categorical and numerical features
 Contains missing values
-Ideal for ML tasks
 Used for the entire modeling process
 
+MathScore is the prediction target. ReadingScore and WritingScore were excluded from training to prevent data leakage due to strong correlation with MathScore.
 
+**Methodology**
 
+**1. Exploratory Data Analysis**
 
-* Target variable:
-MathScore
+The dataset was inspected for structure, types, value distributions, missing values, and correlations. Score distributions were analyzed, and relationships between subjects were examined. Strong correlation between ReadingScore, WritingScore, and MathScore justified removing the reading and writing scores from the feature set.
 
-* Removed to avoid leakage:
-ReadingScore
-WritingScore
+**2. Data Preprocessing**
 
+A preprocessing pipeline was created using a ColumnTransformer. The following steps were applied:
 
+Missing values in numerical features were imputed using median values.
 
+Missing values in categorical features were imputed using the most frequent category.
 
-** Project Workflow :
-1. Data Exploration :
-- Checked missing values
-- Performed descriptive statistics
-- Visualized distributions of Math/Reading/Writing scores
-- Observed strong correlation between Reading ⇄ Writing ⇄ Math → Led us to drop them as predictors (to prevent leakage)
-- Identified categorical vs numerical features
+Numerical features were standardized.
 
-2️. Data Preprocessing :
-Implemented a scikit-learn ColumnTransformer:
+Categorical features were one-hot encoded.
 
-- Numerical Features :
-Imputed using median
-Scaled using StandardScaler
+This pipeline ensures consistent transformation during both training and prediction.
 
-- Categorical Features :
-Imputed using most_frequent
-Encoded using OneHotEncoder(handle_unknown="ignore")
+**3. Train–Test Split**
 
-The pipeline ensures clean, consistent, and reproducible data processing.
+The dataset was divided into an 80 percent training set and a 20 percent testing set to evaluate model performance on unseen data. The split ensures fair assessment of generalization ability.
 
-3️. Train–Test Split :
-80% training
-20% testing
-random_state=42 for reproducibility
+**4. Model Development**
 
-4️. Modeling :
-Two models were trained:
+Two regression models were trained:
 
-* Linear Regression (Baseline Model)
-Interpretable
-Fast to train
-Used to establish benchmark performance
+Linear Regression (baseline model)
 
-* Random Forest Regressor
-Capable of capturing nonlinear relationships
-Tunable
-More robust
+Random Forest Regressor (ensemble model)
 
-Both models were built inside a pipeline to ensure preprocessing is applied consistently.
+Both models were wrapped inside a pipeline that included all preprocessing steps. This ensures the model receives clean and encoded features consistently.
 
-5️. Model Evaluation
+**5. Model Evaluation**
 
-Metrics used:
+Models were evaluated on the test set using mean absolute error, root mean squared error, and the coefficient of determination.
 
-MAE (Mean Absolute Error)
-RMSE (Root Mean Squared Error)
-R² Score
+Summary of key results:
 
-- Linear Regression Results
-MAE  : 10.383
-RMSE : 12.840
-R²   : 0.289
+Linear Regression achieved the best overall performance with the lowest error values and the highest R² score.
 
-- Random Forest (Before Tuning)
-MAE  : 11.560
-RMSE : 14.360
-R²   : 0.111
+The initial Random Forest model underperformed due to default hyperparameters.
 
+**6. Hyperparameter Tuning**
 
-* Observation:
-Random Forest underperformed initially due to untuned hyperparameters.
+RandomizedSearchCV was used to improve the Random Forest model. Various parameters related to tree depth, number of estimators, minimum samples required for splitting, and feature selection were tuned.
 
-6️. Hyperparameter Tuning :
-Performed using RandomizedSearchCV with 3-fold cross-validation.
+The tuned model showed significant improvement, reducing error metrics and increasing the R² score. However, Linear Regression remained the best-performing model for this dataset.
 
-Best parameters found:
+**7. Model Deployment**
 
-n_estimators    = 200
-max_depth       = 10
-min_samples_split = 10
-min_samples_leaf  = 1
-max_features      = 'sqrt'
+The final selected model (Linear Regression) was serialized using the pickle library. A prediction function was implemented to:
 
-📊 Tuned Random Forest Results
-MAE  : 10.498
-RMSE : 12.980
-R²   : 0.274
+Load the saved model
 
-* Observation:
-Model performance improved significantly after tuning, nearly matching Linear Regression.
+Accept new student records in dictionary format
 
+Transform the data using the internal preprocessing pipeline
 
-7️. Final Model Deployment
-The final model (pipeline + preprocessing + trained algorithm) was saved using pickle:
-student_exam_mathscore_model.pkl
+Output predicted MathScore
 
-A prediction function was created to accept new student data and produce a MathScore prediction.
+This completes an end-to-end deployment-ready workflow.
 
+**Project Structure**
 
+The repository follows a structured layout for clarity:
 
-
-Example usage:
-predict_math_score({
-    "Gender": "female",
-    "EthnicGroup": "group B",
-    "ParentEduc": "some college",
-    "LunchType": "standard",
-    "TestPrep": "none",
-    "ParentMaritalStatus": "married",
-    "PracticeSport": "sometimes",
-    "IsFirstChild": "yes",
-    "NrSiblings": 2,
-    "TransportMeans": "school_bus",
-    "WklyStudyHours": "5 - 10"
-})
-
-
-
-
-* Project Structure
-haystek_assessment/
+project-root/
 │
 ├── data/
 │   ├── Expanded_data_with_more_features.csv
@@ -169,27 +110,30 @@ haystek_assessment/
 ├── README.md
 └── requirements.txt
 
+**Key Insights**
 
+Several categorical and demographic factors influence student performance.
 
+Weekly study hours, test preparation, parental education level, and lunch type showed meaningful associations with performance.
 
-* How to Run This Project :
+ReadingScore and WritingScore were intentionally excluded to avoid leakage because they strongly predict MathScore.
 
-1. Create the Conda Environment
-conda create -n exam_score_env python=3.10
-conda activate exam_score_env
+Linear Regression provided strong baseline performance, indicating largely linear relationships in the dataset.
 
-2. Install Dependencies
-pip install -r requirements.txt
+Hyperparameter tuning improved the Random Forest model but did not surpass Linear Regression.
 
-3. Launch Jupyter Notebook
-jupyter notebook
+**Conclusion**
 
-4. Run the notebook cell-by-cell
-Located in: notebook/student_exam_score_prediction.ipynb
+The project successfully demonstrates:
 
-* Key Insights :
-Reading/Writing strongly correlate with Math → removed to avoid leakage
-Categorical features significantly influence model performance
-Linear Regression surprisingly outperformed initial Random Forest
-Hyperparameter tuning drastically improved Random Forest
-R² remained moderate → indicates students’ scores depend on many external factors not captured in dataset
+A complete machine learning workflow
+
+Systematic data cleaning and preprocessing
+
+Comparison of multiple models
+
+Hyperparameter tuning
+
+Deployment of a reusable prediction model
+
+This pipeline is ready for practical use and can be extended with additional features, domain data, or more advanced regression techniques if required.
